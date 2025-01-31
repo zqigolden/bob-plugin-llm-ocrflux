@@ -65,6 +65,7 @@ function generatePrompts (query)  {
 /**
  * @param {string} model
  * @param {Bob.TranslateQuery} query
+ * @param {boolean} isStream
  * @returns {{
  * model: string;
  * messages: {role: string; content: string}[];
@@ -73,7 +74,7 @@ function generatePrompts (query)  {
  * stream: boolean;
  * }}
  */
-function buildRequestBody(model, query) {
+function buildRequestBody(model, query, isStream) {
   const {generatedSystemPrompt, generatedUserPrompt} = generatePrompts(query);
 
   // prompt
@@ -98,7 +99,7 @@ function buildRequestBody(model, query) {
     ],
     temperature: Number($option.temperature ?? 0.7),
     max_tokens: 4096,
-    stream: true,
+    stream: isStream,
   };
 }
 
@@ -123,6 +124,22 @@ function handleError(query, result) {
       addtion: JSON.stringify(result),
     },
   });
+}
+
+/**
+ * @param {Bob.TranslateQuery} query
+ * @returns {(err: any) => void}
+ */
+function handleQueryError(query) {
+  return (err) => {
+    query.onCompletion({
+      error: {
+        type: err._type || 'unknown',
+        message: err._message || '未知错误',
+        addtion: err._addition,
+      },
+    });
+  };
 }
 
 /**
@@ -196,6 +213,103 @@ function handleResponse(query, targetText, responseObj) {
     });
     return resultText;
   }
+}
+
+/**
+ * @param {Bob.TranslateQuery} query
+ * @param {Object} header
+ * @param {Object} body
+ */
+function handleStreamRequest(query, header, body) {
+  const baseUrl = $option.apiUrl || "https://api.openai.com";
+  const urlPath = $option.apiUrlPath || "/v1/chat/completions";
+  
+  (async () => {
+    let targetText = '';
+    await $http.streamRequest({
+      method: 'POST',
+      url: baseUrl + urlPath,
+      header,
+      body,
+      cancelSignal: query.cancelSignal,
+      streamHandler: (streamData) => {
+        const lines = streamData.text.split('\n');
+        for (const line of lines) {
+          const parsedData = parseStreamData(line);
+          if (!parsedData || !parsedData.data) continue; 
+          targetText = handleResponse(query, targetText, parsedData.data);
+        }
+      },
+      handler: (result) => {
+        if (result.error || result.response.statusCode >= 400) {
+          handleError(query, result);
+          return;
+        }
+        if (!targetText) {
+          query.onCompletion({
+            error: {
+              type: 'api',
+              message: '未获取到有效的翻译结果',
+              addtion: JSON.stringify(result),
+            },
+          });
+        }
+      },
+    });
+  })().catch(handleQueryError(query));
+}
+
+/**
+ * @param {Bob.TranslateQuery} query
+ * @param {Object} header
+ * @param {Object} body
+ */
+function handleNormalRequest(query, header, body) {
+  const baseUrl = $option.apiUrl || "https://api.openai.com";
+  const urlPath = $option.apiUrlPath || "/v1/chat/completions";
+
+  $http.request({
+    method: 'POST',
+    url: baseUrl + urlPath,
+    header,
+    body,
+    handler: (result) => {
+      if (result.error || result.response.statusCode >= 400) {
+        handleError(query, result);
+        return;
+      }
+      
+      try {
+        if (!result.data || !result.data.choices || !result.data.choices[0] || !result.data.choices[0].message) {
+          query.onCompletion({
+            error: {
+              type: 'api',
+              message: '未获取到有效的翻译结果',
+              addtion: JSON.stringify(result),
+            },
+          });
+          $log.error(`未获取到有效的翻译结果: ${JSON.stringify(result)}`);
+          return;
+        }
+        const content = result.data.choices[0].message.content;
+        query.onCompletion({
+          result: {
+            from: query.detectFrom,
+            to: query.detectTo,
+            toParagraphs: [content],
+          },
+        });
+      } catch (e) {
+        query.onCompletion({
+          error: {
+            type: 'api',
+            message: '响应解析失败',
+            addtion: JSON.stringify(result),
+          },
+        });
+      }
+    }
+  });
 }
 
 /**
@@ -276,57 +390,15 @@ function translate(query) {
   const apiKey =
     apiKeySelection[Math.floor(Math.random() * apiKeySelection.length)];
 
-  const baseUrl = apiUrl || "https://api.openai.com";
-  const urlPath = apiUrlPath || "/v1/chat/completions";
-
+  const isStream = $option.request_mode === 'stream';
   const header = buildHeader(apiKey);
-  const body = buildRequestBody(model, query);
+  const body = buildRequestBody(model, query, isStream);
 
-  (async () => {
-    let targetText = '';
-
-    await $http.streamRequest({
-      method: 'POST',
-      url: baseUrl + urlPath,
-      header,
-      body,
-      cancelSignal: query.cancelSignal,
-      streamHandler: (streamData) => {
-        const lines = streamData.text.split('\n');
-        for (const line of lines) {
-          const parsedData = parseStreamData(line);
-          if (!parsedData || !parsedData.data) continue; 
-          
-          targetText = handleResponse(query, targetText, parsedData.data);
-        }
-      },
-      handler: (result) => {
-        if (result.error || result.response.statusCode >= 400) {
-          handleError(query, result);
-          return;
-        }
-
-        if (!targetText) {
-            query.onCompletion({
-              error: {
-                type: 'api',
-                message: '未获取到有效的翻译结果',
-                addtion: JSON.stringify(result),
-              },
-            });
-            return;
-          }
-      },
-    });
-  })().catch((err) => {
-    query.onCompletion({
-      error: {
-        type: err._type || 'unknown',
-        message: err._message || '未知错误',
-        addtion: err._addition,
-      },
-    });
-  });
+  if (isStream) {
+    handleStreamRequest(query, header, body);
+  } else {
+    handleNormalRequest(query, header, body);
+  }
 }
 
 exports.supportLanguages = supportLanguages;

@@ -120,6 +120,10 @@
         {
           "title": "流式请求",
           "value": "stream"
+        }, 
+        {
+          "title": "普通请求",
+          "value": "normal"
         }
       ]
     }
