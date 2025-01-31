@@ -233,7 +233,24 @@ function translate(query) {
       });
   }
 
-  const {model, apiKeys, apiUrl, apiUrlPath} = $option;
+  let model = $option.model;
+  const {apiKeys, apiUrl, apiUrlPath} = $option;
+
+  if (model === 'custom') {
+    const customModelName = $option.custom_model_name;
+    if (!customModelName) {
+      return query.onCompletion({
+        error: {
+          type: 'param',
+          message: '配置错误 - 未填写自定义模型名',
+          addtion: '请在插件配置中填写自定义模型名',
+        },
+      });
+    } else {
+      model = customModelName;
+    }
+  }
+
   if (!apiKeys) {
     return query.onCompletion({
       error: {
