@@ -1,7 +1,7 @@
 {
   "identifier": "henry.openai.translator",
   "version": "0.1.0",
-  "category": "translate",
+  "category": "ocr",
   "name": "OpenAI Translator",
   "summary": "OpenAI powered translator",
   "icon": 124,
@@ -36,6 +36,22 @@
         {
           "title": "自定义模型",
           "value": "custom"
+        }
+      ]
+    },
+    {
+      "identifier": "visionModel",
+      "type": "menu",
+      "title": "OCR模型",
+      "defaultValue": "gpt-4o-mini",
+      "menuValues": [
+        {
+          "title": "gpt-4o-mini",
+          "value": "gpt-4o-mini"
+        },
+        {
+          "title": "gpt-4o",
+          "value": "gpt-4o"
         }
       ]
     },
@@ -99,6 +115,17 @@
           "$sourceLang",
           "$targetLang"
         ]
+      }
+    },
+    {
+      "identifier": "ocrPrompt",
+      "type": "text",
+      "title": "OCR指令",
+      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖默认的 OCR Prompt。",
+      "textConfig": {
+        "type": "visible",
+        "height": "100",
+        "placeholderText": "请识别图片中的文字，保持原有格式和排版，使用图片对应的语言进行输出。如果包含多语种内容，请保持原文语种。"
       }
     },
     {

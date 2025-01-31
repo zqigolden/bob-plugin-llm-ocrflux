@@ -401,5 +401,138 @@ function translate(query) {
   }
 }
 
+/**
+ * OCR文字识别功能实现
+ * @param {Bob.OcrQuery} query
+ * @param {Bob.Completion} completion
+ */
+async function ocr(query, completion) {
+  try {
+    const imageData = query.image;
+
+    // @ts-ignore
+    // 这里imageData实际上是DataObject类而非global.d.ts中定义的Data类，因此可以使用toBase64()转成base64字符串
+    const base64Image = imageData.toBase64();
+    if (!base64Image) {
+      throw {
+        _type: 'param',
+        _message: '图片数据转换失败',
+        _addition: JSON.stringify({ status: 400 })
+      };
+    }
+
+    const imageUrl = `data:image/jpeg;base64,${base64Image}`;
+
+    const {apiKeys} = $option;
+    if (!apiKeys) {
+      return completion({
+        error: {
+          type: 'secretKey',
+          message: '配置错误 - 未填写 API Keys',
+          addtion: '请在插件配置中填写 API Keys',
+        },
+      });
+    }
+    const apiKeySelection = apiKeys.split(',').map((key) => key.trim());
+  
+    if (!apiKeySelection.length) {
+        return completion({
+            error: {
+                type: 'secretKey',
+                message: '配置错误 - 未填写 API Keys',
+                addtion: '请在插件配置中填写 API Keys',
+            },
+        });
+    }
+  
+  
+    const apiKey =
+      apiKeySelection[Math.floor(Math.random() * apiKeySelection.length)];
+
+    const header = {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    };
+
+    // 构建请求体
+    const body = {
+      model: $option.visionModel || 'gpt-4o-mini',
+      messages: [{
+        role: 'user',
+        content: [{
+          type: 'text',
+          text: $option.ocrPrompt || '请识别图片中的文字，保持原有格式和排版，使用图片对应的语言进行输出。如果包含多语种内容，请保持原文语种。'
+        }, {
+          type: 'image_url',
+          image_url: {
+            url: imageUrl
+          }
+        }]
+      }],
+      max_tokens: Number($option.max_tokens || 4096)
+    };
+
+
+    const baseUrl = $option.apiUrl || 'https://api.openai.com';
+    const urlPath = $option.apiUrlPath || '/v1/chat/completions';
+    $http.request({
+      method: 'POST',
+      url: baseUrl + urlPath,
+      header,
+      body,
+      handler: (result) => {
+        if (result.error || result.response.statusCode >= 400) {
+          completion({
+            error: {
+              type: 'api',
+              message: result.data?.error?.message || 'OCR请求失败',
+              addtion: JSON.stringify(result),
+            },
+          });
+          return;
+        }
+        
+        try {
+          if (!result.data || !result.data.choices || !result.data.choices[0] || !result.data.choices[0].message) {
+            completion({
+              error: {
+                type: 'api',
+                message: '未获取到有效的识别结果',
+                addtion: JSON.stringify(result),
+              },
+            });
+            $log.error(`未获取到有效的识别结果: ${JSON.stringify(result)}`);
+            return;
+          }
+          const text = result.data.choices[0].message.content;
+          completion({
+            result: {
+              texts: [{ text }],
+              from: query.detectFrom
+            },
+          });
+        } catch (e) {
+          completion({
+            error: {
+              type: 'api',
+              message: '响应解析失败',
+              addtion: JSON.stringify(result),
+            },
+          });
+        }
+      }
+    });
+  } catch (error) {
+    completion({
+      error: {
+        type: error._type || 'unknown',
+        message: error._message || '未知错误',
+        addtion: error._addition
+      }
+    });
+  }
+}
+
 exports.supportLanguages = supportLanguages;
 exports.translate = translate;
+exports.ocr = ocr;
