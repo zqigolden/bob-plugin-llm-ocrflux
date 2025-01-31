@@ -60,6 +60,16 @@
       }
     },
     {
+      "identifier": "max_tokens",
+      "type": "text",
+      "title": "最大输出token数",
+      "desc": "用于限制模型返回的token数，默认值为 4096",
+      "textConfig": {
+        "type": "visible",
+        "placeholderText": "4096"
+      }
+    },
+    {
       "identifier": "customSystemPrompt",
       "type": "text",
       "title": "系统指令",

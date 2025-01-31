@@ -97,8 +97,8 @@ function buildRequestBody(model, query, isStream) {
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
     ],
-    temperature: Number($option.temperature ?? 0.7),
-    max_tokens: 4096,
+    temperature: Number($option.temperature || 0.7),
+    max_tokens: Number($option.max_tokens || 4096),
     stream: isStream,
   };
 }
