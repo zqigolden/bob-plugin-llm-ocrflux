@@ -234,6 +234,15 @@ function translate(query) {
   }
 
   const {model, apiKeys, apiUrl, apiUrlPath} = $option;
+  if (!apiKeys) {
+    return query.onCompletion({
+      error: {
+        type: 'secretKey',
+        message: '配置错误 - 未填写 API Keys',
+        addtion: '请在插件配置中填写 API Keys',
+      },
+    });
+  }
   const apiKeySelection = apiKeys.split(',').map((key) => key.trim());
 
   if (!apiKeySelection.length) {
