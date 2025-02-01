@@ -6,13 +6,6 @@ function supportLanguages() {
   return lang.supportLanguages.map(([standardLang]) => standardLang);
 }
 
-/**
- * @param {string} apiKey - The authentication API key.
- * @returns {{
- * "Authorization": string;
- * "Content-Type": string;
- * }} The header object.
- */
 function buildHeader(apiKey) {
   return {
     'Authorization': `Bearer ${apiKey}`,
@@ -20,32 +13,7 @@ function buildHeader(apiKey) {
   };
 }
 
-/**
- * @param {Bob.TranslateQuery} query
- * @param {Bob.HttpResponse} result
- * @returns {void}
- */
-function handleError(query, result) {
-  const { statusCode } = result.response;
-  const reason = statusCode >= 400 && statusCode < 500 ? 'param' : 'api';
-  const errorMessage =
-    result.data && result.data.detail ? result.data.detail : '接口响应错误';
 
-  // Enhanced error logging
-  $log.error(`Translation error: ${errorMessage}. Status code: ${statusCode}. Full response: ${JSON.stringify(result)}`);
-
-  query.onCompletion({
-    error: {
-      type: reason,
-      message: `${errorMessage}`,
-      addtion: JSON.stringify(result),
-    },
-  });
-}
-/**
- * Generates OCR-specific prompt with Markdown formatting requirements
- * @returns {string} 
- */
 function createUserPrompt() {
   if ($option.ocrMode === 'markdown') {
     return $option.ocrUserPrompt || `Accurately extract all content from the image including:
@@ -76,14 +44,16 @@ function createSystemPrompt() {
   }
 }
 
-/**
- * 构建请求体
- * @param {string} imageUrl - 图片的URL
- * @returns {Object} 请求体
- */
+
 function buildBody(imageUrl) {
+  let model = '';
+  if ($option.visionModel === 'custom') {
+    model = $option.custom_model_name;
+  } else {
+    model = $option.visionModel || 'gpt-4o-mini';
+  }
   return {
-    model: $option.visionModel || 'gpt-4o-mini',
+    model: model,
     messages: [{
       role: 'system',
       content: createSystemPrompt(),
@@ -103,11 +73,6 @@ function buildBody(imageUrl) {
 }
 
 
-/**
- * OCR文字识别功能实现
- * @param {Bob.OcrQuery} query
- * @param {Bob.Completion} completion
- */
 async function ocr(query, completion) {
   try {
     const imageData = query.image;
@@ -164,10 +129,45 @@ async function ocr(query, completion) {
       body,
       handler: (result) => {
         if (result.error || result.response.statusCode >= 400) {
+          let errorMessage = 'OCR请求失败';
+          
+          // 处理网络层错误
+          if (result.error) {
+            errorMessage = `网络请求失败: ${result.error.code || '未知错误码'}`;
+            if (result.data?.error?.message) {
+              errorMessage += `: ${result.data.error.message}`
+            }
+          }
+          // 处理HTTP错误响应
+          else if (result.response) {
+            const statusCode = result.response.statusCode;
+            const statusText = statusCode || '未知错误';
+            errorMessage = `HTTP错误 ${statusCode} (${statusText})`;
+            
+            // 添加详细的错误信息
+            const details = [];
+            if (result.data?.error?.message) {
+              details.push(`错误信息: ${result.data.error.message}`);
+            }
+            if (result.data?.error?.debugMessage) {
+              details.push(`调试信息: ${result.data.error.debugMessage}`);
+            }
+            
+            // 添加完整的响应体信息
+            details.push(`完整响应: ${JSON.stringify(result.data, null, 2)}`);
+            
+            // 记录详细日志
+            $log.error(`请求失败:\n状态码: ${statusCode}\n状态描述: ${statusText}\n${details.join('\n')}`);
+            
+            if (details.length > 0) {
+              errorMessage += `\n${details.join('\n')}`;
+            }
+          }
+
           completion({
             error: {
               type: 'api',
-              message: result.data?.error?.message || 'OCR请求失败',
+              message: errorMessage,
               addtion: JSON.stringify(result),
             },
           });
