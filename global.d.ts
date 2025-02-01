@@ -164,7 +164,7 @@ declare namespace Bob {
   }
   interface OcrQuery {
     from: Language; //  目前用户选中的源语言
-    image: Data; //  需要识别的图片数据
+    image: DataObject; //  需要识别的图片数据
     detectFrom: Exclude<Language, 'auto'>; //  图片中最可能的语言，如果插件不具备检测语种的能力，可直接使用该属性。
   }
   interface TTSQuery {

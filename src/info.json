@@ -125,7 +125,7 @@
       "textConfig": {
         "type": "visible",
         "height": "100",
-        "placeholderText": "请识别图片中的文字，保持原有格式和排版，使用图片对应的语言进行输出。如果包含多语种内容，请保持原文语种。"
+        "placeholderText": "Accurately extract all content from the image including:\n- Text (preserve original languages)\n- Mathematical equations (convert to LaTeX)\n- Tables (format as Markdown tables)\n- Document structure (use headings and sections)\n\nConvert everything to clean Markdown format while:\n1. Maintaining original language(s) and layout\n2. Preserving exact numerical values and symbols\n3. Using $$ LaTeX $$ for equations\n4. Creating Markdown tables for tabular data\n5. Never adding interpretations or explanations"
       }
     },
     {

@@ -60,8 +60,6 @@ function generatePrompts (query)  {
   };
 }
 
-
-
 /**
  * @param {string} model
  * @param {Bob.TranslateQuery} query
@@ -402,6 +400,26 @@ function translate(query) {
 }
 
 /**
+ * Generates OCR-specific prompt with Markdown formatting requirements
+ * @returns {string} 
+ */
+function createOcrPrompt() {
+  return $option.ocrPrompt || `Accurately extract all content from the image including:
+- Text (preserve original languages)
+- Mathematical equations (convert to LaTeX)
+- Tables (format as Markdown tables)
+- Document structure (use headings and sections)
+
+Convert everything to clean Markdown format while:
+1. Maintaining original language(s) and layout
+2. Preserving exact numerical values and symbols
+3. Using $$ LaTeX $$ for equations
+4. Creating Markdown tables for tabular data
+5. Never adding interpretations or explanations`;
+}
+
+
+/**
  * OCR文字识别功能实现
  * @param {Bob.OcrQuery} query
  * @param {Bob.Completion} completion
@@ -410,15 +428,15 @@ async function ocr(query, completion) {
   try {
     const imageData = query.image;
 
-    // @ts-ignore
-    // 这里imageData实际上是DataObject类而非global.d.ts中定义的Data类，因此可以使用toBase64()转成base64字符串
     const base64Image = imageData.toBase64();
     if (!base64Image) {
-      throw {
-        _type: 'param',
-        _message: '图片数据转换失败',
-        _addition: JSON.stringify({ status: 400 })
-      };
+      return completion({
+        error: {
+          type: 'param',
+          message: '图片数据转换失败',
+          addtion: JSON.stringify({ status: 400 })
+        },
+      });
     }
 
     const imageUrl = `data:image/jpeg;base64,${base64Image}`;
@@ -449,10 +467,7 @@ async function ocr(query, completion) {
     const apiKey =
       apiKeySelection[Math.floor(Math.random() * apiKeySelection.length)];
 
-    const header = {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    };
+    const header = buildHeader(apiKey);
 
     // 构建请求体
     const body = {
@@ -461,7 +476,7 @@ async function ocr(query, completion) {
         role: 'user',
         content: [{
           type: 'text',
-          text: $option.ocrPrompt || '请识别图片中的文字，保持原有格式和排版，使用图片对应的语言进行输出。如果包含多语种内容，请保持原文语种。'
+          text: createOcrPrompt()
         }, {
           type: 'image_url',
           image_url: {
