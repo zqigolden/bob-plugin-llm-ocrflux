@@ -47,7 +47,8 @@ function handleError(query, result) {
  * @returns {string} 
  */
 function createUserPrompt() {
-  return $option.ocrUserPrompt || `Accurately extract all content from the image including:
+  if ($option.ocrMode === 'markdown') {
+    return $option.ocrUserPrompt || `Accurately extract all content from the image including:
 - Text (preserve original languages)
 - Mathematical equations (convert to LaTeX)
 - Tables (format as Markdown tables)
@@ -59,10 +60,20 @@ Convert everything to clean Markdown format while:
 3. Using $$ LaTeX $$ for equations
 4. Creating Markdown tables for tabular data
 5. Never adding interpretations or explanations`;
+  } else {
+    return $option.ocrUserPrompt || `Please accurately identify the text content in the image:
+- Preserve the original language (retain the original arrangement in multilingual contexts)
+- Keep all special symbols, numbers, and punctuation
+- Maintain the original layout structure (paragraphs, line breaks, indentations, etc.)`;
+  }
 }
 
 function createSystemPrompt() {
-  return $option.ocrSystemPrompt || `You are a helpful assistant that can accurately extract and convert content from images into clean Markdown format.`;
+  if ($option.ocrMode === 'markdown') {
+    return $option.ocrSystemPrompt || `You are a helpful assistant that can accurately extract and convert content from images into clean Markdown format.`;
+  } else {
+    return $option.ocrSystemPrompt || `You are a helpful assistant that can accurately extract and convert content from images into clean plaintext.`;
+  }
 }
 
 /**

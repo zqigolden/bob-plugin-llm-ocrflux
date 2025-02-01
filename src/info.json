@@ -22,6 +22,24 @@
     },
 
     {
+      "identifier": "ocrMode",
+      "type": "menu",
+      "title": "OCR模式",
+      "desc": "包含markdown和plaintext两种模式，markdown模式适用于识别表格、数学公式、代码等复杂内容，plaintext模式适用于识别纯文本内容，不同模式会调用不同的预设prompt，默认为markdown模式",
+      "defaultValue": "markdown",
+      "menuValues": [
+        {
+          "title": "markdown",
+          "value": "markdown"
+        },
+        {
+          "title": "plaintext",
+          "value": "plaintext"
+        }
+      ]
+    },
+
+    {
       "identifier": "visionModel",
       "type": "menu",
       "title": "OCR模型",
@@ -95,7 +113,7 @@
       "identifier": "ocrSystemPrompt",
       "type": "text",
       "title": "OCR系统指令",
-      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖默认的 OCR Prompt。",
+      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖当前模式下的系统指令。",
       "textConfig": {
         "type": "visible",
         "height": "100",
@@ -106,7 +124,7 @@
       "identifier": "ocrUserPrompt",
       "type": "text",
       "title": "OCR用户指令",
-      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖默认的 OCR Prompt。",
+      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖当前模式下的用户指令。",
       "textConfig": {
         "type": "visible",
         "height": "100",
