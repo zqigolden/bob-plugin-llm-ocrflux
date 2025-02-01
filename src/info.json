@@ -117,7 +117,7 @@
       "identifier": "ocrSystemPrompt",
       "type": "text",
       "title": "OCR系统指令",
-      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖当前模式下的系统指令。",
+      "desc": "可选项。自定义系统指令。",
       "textConfig": {
         "type": "visible",
         "height": "100",
@@ -128,7 +128,7 @@
       "identifier": "ocrUserPrompt",
       "type": "text",
       "title": "OCR用户指令",
-      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖当前模式下的用户指令。",
+      "desc": "可选项。自定义用户指令。",
       "textConfig": {
         "type": "visible",
         "height": "100",
