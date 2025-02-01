@@ -25,7 +25,7 @@
       "identifier": "ocrMode",
       "type": "menu",
       "title": "OCR模式",
-      "desc": "包含markdown和plaintext两种模式，markdown模式适用于识别表格、数学公式、代码等复杂内容，plaintext模式适用于识别纯文本内容，不同模式会调用不同的预设prompt，默认为markdown模式",
+      "desc": "包含markdown和plaintext两种模式，markdown模式适用于识别表格、数学公式、代码等复杂内容，plaintext模式适用于识别纯文本内容，不同模式会调用不同的预设prompt，默认为markdown模式。自定义模式下会使用用户填写的系统指令和用户指令",
       "defaultValue": "markdown",
       "menuValues": [
         {
@@ -35,6 +35,10 @@
         {
           "title": "plaintext",
           "value": "plaintext"
+        },
+        {
+          "title": "custom",
+          "value": "custom"
         }
       ]
     },

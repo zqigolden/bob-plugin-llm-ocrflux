@@ -15,8 +15,11 @@ function buildHeader(apiKey) {
 
 
 function createUserPrompt() {
-  if ($option.ocrMode === 'markdown') {
-    return $option.ocrUserPrompt || `Accurately extract all content from the image including:
+  if ($option.ocrMode === 'custom') {
+    return $option.ocrUserPrompt 
+  }
+  else if ($option.ocrMode === 'markdown') {
+    return `Accurately extract all content from the image including:
 - Text (preserve original languages)
 - Mathematical equations (convert to LaTeX)
 - Tables (format as Markdown tables)
@@ -29,7 +32,7 @@ Convert everything to clean Markdown format while:
 4. Creating Markdown tables for tabular data
 5. Never adding interpretations or explanations`;
   } else {
-    return $option.ocrUserPrompt || `Please accurately identify the text content in the image:
+    return `Please accurately identify the text content in the image:
 - Preserve the original language (retain the original arrangement in multilingual contexts)
 - Keep all special symbols, numbers, and punctuation
 - Maintain the original layout structure (paragraphs, line breaks, indentations, etc.)`;
@@ -37,10 +40,13 @@ Convert everything to clean Markdown format while:
 }
 
 function createSystemPrompt() {
-  if ($option.ocrMode === 'markdown') {
-    return $option.ocrSystemPrompt || `You are a helpful assistant that can accurately extract and convert content from images into clean Markdown format.`;
+  if ($option.ocrMode === 'custom') {
+    return $option.ocrSystemPrompt 
+  }
+  else if ($option.ocrMode === 'markdown') {
+    return `You are a helpful assistant that can accurately extract and convert content from images into clean Markdown format.`;
   } else {
-    return $option.ocrSystemPrompt || `You are a helpful assistant that can accurately extract and convert content from images into clean plaintext.`;
+    return `You are a helpful assistant that can accurately extract and convert content from images into clean plaintext.`;
   }
 }
 
@@ -50,7 +56,7 @@ function buildBody(imageUrl) {
   if ($option.visionModel === 'custom') {
     model = $option.custom_model_name;
   } else {
-    model = $option.visionModel || 'gpt-4o-mini';
+    model = $option.visionModel;
   }
   return {
     model: model,
