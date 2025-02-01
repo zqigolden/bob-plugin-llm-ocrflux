@@ -1,11 +1,12 @@
 {
-  "identifier": "henry.openai.translator",
+  "identifier": "henry.llm.ocr",
   "version": "0.1.0",
   "category": "ocr",
-  "name": "OpenAI Translator",
-  "summary": "OpenAI powered translator",
+  "name": "LLM OCR",
+  "summary": "LLM powered OCR",
   "icon": 124,
   "author": "henry <henryen.jessie@gmail.com>",
+  "homepage": "https://github.com/Henry-Jessie/bob-plugin-llm-ocr",
   "minBobVersion": "1.8.0",
   "options": [
     {
@@ -19,10 +20,11 @@
         "placeholderText": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
       }
     },
+
     {
-      "identifier": "model",
+      "identifier": "visionModel",
       "type": "menu",
-      "title": "模型",
+      "title": "OCR模型",
       "defaultValue": "gpt-4o-mini",
       "menuValues": [
         {
@@ -40,22 +42,6 @@
       ]
     },
     {
-      "identifier": "visionModel",
-      "type": "menu",
-      "title": "OCR模型",
-      "defaultValue": "gpt-4o-mini",
-      "menuValues": [
-        {
-          "title": "gpt-4o-mini",
-          "value": "gpt-4o-mini"
-        },
-        {
-          "title": "gpt-4o",
-          "value": "gpt-4o"
-        }
-      ]
-    },
-    {
       "identifier": "custom_model_name",
       "type": "text",
       "title": "自定义模型名",
@@ -63,69 +49,6 @@
       "textConfig": {
         "type": "visible",
         "placeholderText": "custom-model-name"
-      }
-    },
-    {
-      "identifier": "temperature",
-      "type": "text",
-      "title": "温度",
-      "desc": "可选项。温度值越高，生成的文本越随机。默认值为 0.7（0~2）。",
-      "textConfig": {
-        "type": "visible",
-        "placeholderText": "0.7"
-      }
-    },
-    {
-      "identifier": "max_tokens",
-      "type": "text",
-      "title": "最大输出token数",
-      "desc": "用于限制模型返回的token数，默认值为 4096",
-      "textConfig": {
-        "type": "visible",
-        "placeholderText": "4096"
-      }
-    },
-    {
-      "identifier": "customSystemPrompt",
-      "type": "text",
-      "title": "系统指令",
-      "desc": "可选项。自定义 System Prompt，填写则会覆盖默认的 System Prompt。自定义 Prompt可使用以下变量：\n\n`$text` - 需要翻译的文本，即翻译窗口输入框内的文本 `$sourceLang` - 原文语言，即翻译窗口输入框内文本的语言，比如「简体中文」\n\n`$targetLang` - 目标语言，即需要翻译成的语言，可以在翻译窗口中手动选择或自动检测，比如「English」",
-      "textConfig": {
-        "type": "visible",
-        "height": "100",
-        "placeholderText": "You are an expert translator. Your task is to accurately translate the given text without altering its original meaning, tone, and style. Present only the translated result without any additional commentary.",
-        "keyWords": [
-          "$text",
-          "$sourceLang",
-          "$targetLang"
-        ]
-      }
-    },
-    {
-      "identifier": "customUserPrompt",
-      "type": "text",
-      "title": "用户指令",
-      "desc": "可选项。自定义 User Prompt，填写则会覆盖默认的 User Prompt，默认值为`$text`（即翻译窗口输入框内的文本）。\n\n自定义 Prompt 中可以使用与系统指令中相同的变量",
-      "textConfig": {
-        "type": "visible",
-        "height": "100",
-        "placeholderText": "Please translate below text from ${sourceLang} to ${targetLang}. Present only the translated result without any additional commentary:\n\n$text",
-        "keyWords": [
-          "$text",
-          "$sourceLang",
-          "$targetLang"
-        ]
-      }
-    },
-    {
-      "identifier": "ocrPrompt",
-      "type": "text",
-      "title": "OCR指令",
-      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖默认的 OCR Prompt。",
-      "textConfig": {
-        "type": "visible",
-        "height": "100",
-        "placeholderText": "Accurately extract all content from the image including:\n- Text (preserve original languages)\n- Mathematical equations (convert to LaTeX)\n- Tables (format as Markdown tables)\n- Document structure (use headings and sections)\n\nConvert everything to clean Markdown format while:\n1. Maintaining original language(s) and layout\n2. Preserving exact numerical values and symbols\n3. Using $$ LaTeX $$ for equations\n4. Creating Markdown tables for tabular data\n5. Never adding interpretations or explanations"
       }
     },
     {
@@ -149,20 +72,46 @@
       }
     },
     {
-      "identifier": "request_mode",
-      "type": "menu",
-      "title": "请求方式",
-      "defaultValue": "stream",
-      "menuValues": [
-        {
-          "title": "流式请求",
-          "value": "stream"
-        }, 
-        {
-          "title": "普通请求",
-          "value": "normal"
-        }
-      ]
+      "identifier": "temperature",
+      "type": "text",
+      "title": "温度",
+      "desc": "可选项。温度值越高，生成的文本越随机。默认值为 0.7（0~2）。",
+      "textConfig": {
+        "type": "visible",
+        "placeholderText": "0.7"
+      }
+    },
+    {
+      "identifier": "max_tokens",
+      "type": "text",
+      "title": "最大输出token数",
+      "desc": "用于限制模型返回的token数，默认值为 4096",
+      "textConfig": {
+        "type": "visible",
+        "placeholderText": "4096"
+      }
+    },
+    {
+      "identifier": "ocrSystemPrompt",
+      "type": "text",
+      "title": "OCR系统指令",
+      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖默认的 OCR Prompt。",
+      "textConfig": {
+        "type": "visible",
+        "height": "100",
+        "placeholderText": "You are a helpful assistant that can accurately extract and convert content from images into clean Markdown format."
+      }
+    },
+    {
+      "identifier": "ocrUserPrompt",
+      "type": "text",
+      "title": "OCR用户指令",
+      "desc": "可选项。自定义 OCR Prompt，填写则会覆盖默认的 OCR Prompt。",
+      "textConfig": {
+        "type": "visible",
+        "height": "100",
+        "placeholderText": "Accurately extract all content from the image including:\n- Text (preserve original languages)\n- Mathematical equations (convert to LaTeX)\n- Tables (format as Markdown tables)\n- Document structure (use headings and sections)\n\nConvert everything to clean Markdown format while:\n1. Maintaining original language(s) and layout\n2. Preserving exact numerical values and symbols\n3. Using $$ LaTeX $$ for equations\n4. Creating Markdown tables for tabular data\n5. Never adding interpretations or explanations"
+      }
     }
   ]
 }
