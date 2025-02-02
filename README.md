@@ -27,7 +27,7 @@ LLM OCR Bob 插件是一款新一代智能 OCR 工具，它突破了传统 OCR �
 
 1. 安装 [Bob](https://bobtranslate.com/guide/#%E5%AE%89%E8%A3%85) (版本 >= 1.8.0)
 2. 下载插件: [llm-ocr.bobplugin](https://github.com/Henry-Jessie/bob-plugin-llm-ocr/releases/latest)
-3. 获取 [OpenAI API Key](https://platform.openai.com/api-keys)
+3. 获取 [OpenAI API Key](https://platform.openai.com/api-keys)（或其它兼容OPENAI API格式的平台API KEY）
 4. 在插件配置中填入API KEY（支持多个KEY自动负载均衡）
 
 ## 核心功能
