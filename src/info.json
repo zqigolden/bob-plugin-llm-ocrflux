@@ -7,6 +7,7 @@
   "icon": 124,
   "author": "henry <henryen.jessie@gmail.com>",
   "homepage": "https://github.com/Henry-Jessie/bob-plugin-llm-ocr",
+  "appcast": "https://github.com/Henry-Jessie/bob-plugin-llm-ocr/raw/main/appcast.json",
   "minBobVersion": "1.8.0",
   "options": [
     {
