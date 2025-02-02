@@ -81,7 +81,7 @@ LLM OCR Bob 插件是一款新一代智能 OCR 工具，它突破了传统 OCR �
     ```
 
 ### 开发文档
-参考 [Bob Plugin Development Docs](https://bobtranslate.com/plugin/) 和 [Bob Plugin Development Docs](https://bobtranslate.com/plugin/) 了解更多信息。
+参考 [Bob Plugin Development Docs](https://bobtranslate.com/plugin/) 和 [Bob Plugin Types Docs](https://github.com/liby/bob-translate-types) 了解更多信息。
 
 
 ## 感谢
