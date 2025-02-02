@@ -136,12 +136,17 @@ async function ocr(query, completion) {
       handler: (result) => {
         if (result.error || result.response.statusCode >= 400) {
           let errorMessage = 'OCR请求失败';
-          
+          /** @type {any} */
+          const resultData = result.data;
+          /** @type {any} */
+          const resultError = result.error;
+
           // 处理网络层错误
-          if (result.error) {
-            errorMessage = `网络请求失败: ${result.error.code || '未知错误码'}`;
-            if (result.data?.error?.message) {
-              errorMessage += `: ${result.data.error.message}`
+          if (resultError) {
+            errorMessage = `网络请求失败: ${resultError.code || '未知错误码'}`;
+           
+            if ((resultData)?.error?.message) {
+              errorMessage += `: ${resultData.error.message}`
             }
           }
           // 处理HTTP错误响应
@@ -152,15 +157,16 @@ async function ocr(query, completion) {
             
             // 添加详细的错误信息
             const details = [];
-            if (result.data?.error?.message) {
-              details.push(`错误信息: ${result.data.error.message}`);
+            if (resultData?.error?.message) {
+              details.push(`错误信息: ${resultData.error.message}`);
             }
-            if (result.data?.error?.debugMessage) {
-              details.push(`调试信息: ${result.data.error.debugMessage}`);
+
+            if (resultData?.error?.debugMessage) {
+              details.push(`调试信息: ${resultData.error.debugMessage}`);
             }
             
             // 添加完整的响应体信息
-            details.push(`完整响应: ${JSON.stringify(result.data, null, 2)}`);
+            details.push(`完整响应: ${JSON.stringify(resultData, null, 2)}`);
             
             // 记录详细日志
             $log.error(`请求失败:\n状态码: ${statusCode}\n状态描述: ${statusText}\n${details.join('\n')}`);
@@ -181,7 +187,9 @@ async function ocr(query, completion) {
         }
         
         try {
-          if (!result.data || !result.data.choices || !result.data.choices[0] || !result.data.choices[0].message) {
+          /** @type {any} */
+          const resultData = result.data;
+          if (!resultData || !resultData.choices || !resultData.choices[0] || !resultData.choices[0].message) {
             completion({
               error: {
                 type: 'api',
@@ -192,7 +200,7 @@ async function ocr(query, completion) {
             $log.error(`未获取到有效的识别结果: ${JSON.stringify(result)}`);
             return;
           }
-          const text = result.data.choices[0].message.content;
+          const text = resultData.choices[0].message.content;
           completion({
             result: {
               texts: [{ text }],

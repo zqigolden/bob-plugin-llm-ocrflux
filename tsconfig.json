@@ -4,6 +4,7 @@
     "checkJs": true,
     "outDir": "dist", 
     "lib": ["ES2016", "DOM"],
+    "types": ["@bob-translate/types"],
   },
   "exclude": ["node_modules", "**/node_modules/*", "dist/**"]
 }
