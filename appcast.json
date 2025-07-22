@@ -4,15 +4,8 @@
     {
       "version": "0.1.1",
       "desc": "support ocrflux",
-      "sha256": "6f9a11062cea213bc6761b5efdfb45c5f79342a647c751658a3a2c9709d76538",
+      "sha256": "91052dc3d4c3c53645ce8e8755768f8adca3cf360a025a00cf934fdadd1a1943",
       "url": "https://github.com/zqigolden/bob-plugin-llm-ocrflux/releases/download/v0.1.1/llm-ocr-0.1.1.bobplugin",
-      "minBobVersion": "1.8.0"
-    },
-    {
-      "version": "0.1.0",
-      "desc": "feat: support llm ocr",
-      "sha256": "d444015dff66ba1400d7d6c5bd6d34558112cd7b8a284d6cfe54a24b69b3eb8d",
-      "url": "https://github.com/zqigolden/bob-plugin-llm-ocrflux/releases/download/v0.1.0/llm-ocr-0.1.0.bobplugin",
       "minBobVersion": "1.8.0"
     }
   ]
