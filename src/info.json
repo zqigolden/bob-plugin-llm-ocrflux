@@ -1,13 +1,13 @@
 {
   "identifier": "henry.llm.ocr",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "category": "ocr",
   "name": "LLM OCR",
   "summary": "LLM powered OCR",
   "icon": 124,
   "author": "henry <henryen.jessie@gmail.com>",
-  "homepage": "https://github.com/Henry-Jessie/bob-plugin-llm-ocr",
-  "appcast": "https://github.com/Henry-Jessie/bob-plugin-llm-ocr/raw/main/appcast.json",
+  "homepage": "https://github.com/zqigolden/bob-plugin-llm-ocrflux",
+  "appcast": "https://github.com/zqigolden/bob-plugin-llm-ocrflux/raw/main/appcast.json",
   "minBobVersion": "1.8.0",
   "options": [
     {
@@ -18,10 +18,9 @@
       "textConfig": {
         "type": "secure",
         "height": "40",
-        "placeholderText": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        "placeholderText": "lm-studio"
       }
     },
-
     {
       "identifier": "ocrMode",
       "type": "menu",
@@ -38,25 +37,24 @@
           "value": "plaintext"
         },
         {
+          "title": "ocrflux",
+          "value": "ocrflux"
+        },
+        {
           "title": "custom",
           "value": "custom"
         }
       ]
     },
-
     {
       "identifier": "visionModel",
       "type": "menu",
       "title": "OCR模型",
-      "defaultValue": "gpt-4o-mini",
+      "defaultValue": "ocrflux-3b",
       "menuValues": [
         {
-          "title": "gpt-4o-mini",
-          "value": "gpt-4o-mini"
-        },
-        {
-          "title": "gpt-4o",
-          "value": "gpt-4o"
+          "title": "ocrflux-3b",
+          "value": "ocrflux-3b"
         },
         {
           "title": "自定义模型",
@@ -71,7 +69,7 @@
       "desc": "大模型平台提供的模型",
       "textConfig": {
         "type": "visible",
-        "placeholderText": "custom-model-name"
+        "placeholderText": "local-model"
       }
     },
     {
@@ -81,7 +79,7 @@
       "desc": "如果您需要使用其它OpenAI API兼容平台，可在这里修改为对应平台的地址",
       "textConfig": {
         "type": "visible",
-        "placeholderText": "https://api.openai.com"
+        "placeholderText": "http://localhost:1234"
       }
     },
     {
@@ -101,7 +99,7 @@
       "desc": "可选项。温度值越高，生成的文本越随机。默认值为 0.7（0~2）。",
       "textConfig": {
         "type": "visible",
-        "placeholderText": "0.7"
+        "placeholderText": "0.0"
       }
     },
     {
@@ -111,7 +109,7 @@
       "desc": "用于限制模型返回的token数，默认值为 4096",
       "textConfig": {
         "type": "visible",
-        "placeholderText": "4096"
+        "placeholderText": "8192"
       }
     },
     {

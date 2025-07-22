@@ -1,0 +1,48 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version to release (e.g., 0.1.0)'
+        required: true
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get plugin file path
+        id: get_path
+        run: |
+          plugin_file="release/llm-ocr-${{ github.event.inputs.version }}.bobplugin"
+          if [ ! -f "$plugin_file" ]; then
+            echo "Error: Plugin file not found at $plugin_file"
+            exit 1
+          fi
+          echo "plugin_path=$plugin_file" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          release_name: Release v${{ github.event.inputs.version }}
+          body: |
+            Release for version ${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.plugin_path }}
+          asset_name: llm-ocr.bobplugin
+          asset_content_type: application/zip

@@ -18,7 +18,12 @@ function createUserPrompt() {
   if ($option.ocrMode === 'custom') {
     return $option.ocrUserPrompt 
   }
-  else if ($option.ocrMode === 'markdown') {
+  else if ($option.ocrMode === 'ocrflux') {
+    return `Below is the image of one page of a document.
+        Just return the plain text representation of this document as if you were reading it naturally.
+        ALL tables should be presented in Markdown format.
+        Do not hallucinate.`;
+  } else if ($option.ocrMode === 'markdown') {
     return `Accurately extract all content from the image including:
 - Text (preserve original languages)
 - Mathematical equations (convert to LaTeX)
@@ -42,6 +47,9 @@ Convert everything to clean Markdown format while:
 function createSystemPrompt() {
   if ($option.ocrMode === 'custom') {
     return $option.ocrSystemPrompt 
+  }
+  else if ($option.ocrMode === 'ocrflux') {
+    return `You are a helpful assistant.`;
   }
   else if ($option.ocrMode === 'markdown') {
     return `You are a helpful assistant that can accurately extract and convert content from images into clean Markdown format.`;
@@ -97,35 +105,15 @@ async function ocr(query, completion) {
     const imageUrl = `data:image/jpeg;base64,${base64Image}`;
 
     const {apiKeys} = $option;
-    if (!apiKeys) {
-      return completion({
-        error: {
-          type: 'secretKey',
-          message: '配置错误 - 未填写 API Keys',
-          addtion: '请在插件配置中填写 API Keys',
-        },
-      });
-    }
-    const apiKeySelection = apiKeys.split(',').map((key) => key.trim());
-  
-    if (!apiKeySelection.length) {
-        return completion({
-            error: {
-                type: 'secretKey',
-                message: '配置错误 - 未填写 API Keys',
-                addtion: '请在插件配置中填写 API Keys',
-            },
-        });
-    }
-  
-  
-    const apiKey =
-      apiKeySelection[Math.floor(Math.random() * apiKeySelection.length)];
+    const apiKeySelection = (apiKeys || '').split(',').map((key) => key.trim()).filter(key => key);
+    const apiKey = apiKeySelection.length > 0
+      ? apiKeySelection[Math.floor(Math.random() * apiKeySelection.length)]
+      : '';
 
     const header = buildHeader(apiKey);
     const body = buildBody(imageUrl);
 
-    const baseUrl = ($option.apiUrl || "https://api.openai.com").replace(/\/$/, "");
+    const baseUrl = ($option.apiUrl || "http://localhost:1234").replace(/\/$/, "");
     const urlPath = ($option.apiUrlPath || "/v1/chat/completions").replace(/^\//, "");
     const fullUrl = `${baseUrl}/${urlPath}`;
     $http.request({
@@ -200,10 +188,23 @@ async function ocr(query, completion) {
             $log.error(`未获取到有效的识别结果: ${JSON.stringify(result)}`);
             return;
           }
-          const text = resultData.choices[0].message.content;
+          
+          const content = resultData.choices[0].message.content;
+          let finalText = content;
+
+          try {
+            const parsedContent = JSON.parse(content);
+            if (parsedContent && typeof parsedContent.natural_text === 'string') {
+              finalText = parsedContent.natural_text.replace("\n", "\n\n");
+            }
+          } catch (e) {
+            // Not a JSON or doesn't have the expected format, use content as is.
+            $log.info("Response is not a JSON with natural_text, treating as plain text.");
+          }
+
           completion({
             result: {
-              texts: [{ text }],
+              texts: [{ text: finalText }],
               from: query.detectFrom
             },
           });
